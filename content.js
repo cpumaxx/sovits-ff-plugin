@@ -35,21 +35,26 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
         console.log("Selected text:", selectedText);
 
-        // If text is selected, send it to the backend
-        if (selectedText) {
-            sendToBackend(selectedText)
-                .then(audioBlob => {
-                    const type = audioBlob.type || 'audio/wav';
-                    const audioUrl = URL.createObjectURL(audioBlob);
-                    audioQueue.push({ src: audioUrl, type: type });
+        // Split the text into sentences based on language
+        const sentences = splitIntoSentences(selectedText);
 
-                    // If no audio is currently playing, start the next one
-                    if (!currentAudio) {
-                        playNext();
-                    }
-                })
-                .catch(error => console.error('Error:', error));
-        }
+        // Send each sentence to the backend and enqueue the audio
+        sentences.forEach(sentence => {
+            if (sentence) {
+                sendToBackend(sentence)
+                    .then(audioBlob => {
+                        const type = audioBlob.type || 'audio/wav';
+                        const audioUrl = URL.createObjectURL(audioBlob);
+                        audioQueue.push({ src: audioUrl, type: type });
+
+                        // If no audio is currently playing, start the next one
+                        if (!currentAudio) {
+                            playNext();
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+            }
+        });
     }
 });
 
@@ -69,10 +74,10 @@ function sendToBackend(text) {
             streaming_mode: false // Default to non-streaming mode
         }).toString();
 
-        console.log("Sending to backend:", `https://tts.yourdomain.com/api_v2/tts?${queryParams}`);
+        console.log("Sending to backend:", `https://tts.lothlorien.ca/api_v2/tts?${queryParams}`);
 
         try {
-            const response = await fetch(`https://tts.yourdomain.com/api_v2/tts?${queryParams}`, {
+            const response = await fetch(`https://tts.lothlorien.ca/api_v2/tts?${queryParams}`, {
                 method: 'GET'
             });
 
@@ -86,4 +91,31 @@ function sendToBackend(text) {
             reject(error);
         }
     });
+}
+
+// Function to split text into sentences based on language
+function splitIntoSentences(text) {
+    // Placeholder for language detection
+    const language = detectLanguage(text);
+    let sentences = [];
+
+    switch (language) {
+        case 'en':
+            sentences = text.match(/[^\\.\\!\\?]+[\\.!\\?]+/g) || [];
+            break;
+        case 'ja':
+            sentences = text.match(/[^\\。\\!\\？]+[。\\!\\？]+/g) || [];
+            break;
+        // Add cases for other languages as needed
+        default:
+            sentences = [text];
+    }
+
+    return sentences.map(sentence => sentence.trim());
+}
+
+// Placeholder function for language detection
+function detectLanguage(text) {
+    // For now, assuming it's Japanese
+    return 'ja';
 }
