@@ -26,16 +26,16 @@ function updateContextMenus() {
 
       characters.forEach((character, index) => {
         chrome.contextMenus.create({
-          id: `selectCharacter-${index}`,
+          id: `selectCharacter-${character.name}`,
           title: `Select Character: ${character.name}`,
           contexts: ["selection"]
         });
         if (character.emotions) {
           character.emotions.forEach(emotion => {
             chrome.contextMenus.create({
-              id: `selectEmotion-${index}-${emotion.name.replace(/ /g, '-')}`,
+              id: `selectEmotion-${character.name}-${emotion.name.replace(/ /g, '-')}`,
               title: emotion.name,
-              parentId: `selectCharacter-${index}`,
+              parentId: `selectCharacter-${character.name}`,
               contexts: ["selection"]
             });
           });
@@ -87,7 +87,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
   } else if (info.menuItemId.startsWith("selectEmotion-")) {
     const parts = info.menuItemId.split("-");
     if (parts.length >= 4 && parts[0] === "selectEmotion") {
-      const characterIndex = parseInt(parts[1]);
+      const characterIndex = parts[1];
       const emotionName = parts.slice(2).join(" ");
       setSelectedCharacter(characterIndex, emotionName);
     }
