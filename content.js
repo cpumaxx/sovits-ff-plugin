@@ -2,7 +2,29 @@
 
 console.log("Content script loaded.");
 
-let audioElement;
+let audioQueue = [];
+let currentAudio = null;
+
+// Function to play the next audio in the queue
+function playNext() {
+    if (audioQueue.length === 0) {
+        currentAudio = null;
+        return;
+    }
+
+    const { src, type } = audioQueue.shift();
+
+    currentAudio = new Audio();
+    currentAudio.src = src;
+    currentAudio.type = type;
+    currentAudio.load();
+
+    // Listen for end of current audio and play next
+    currentAudio.addEventListener('ended', playNext);
+
+    // Play the audio
+    currentAudio.play();
+}
 
 // Listen for messages from the background script
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -15,14 +37,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
         // If text is selected, send it to the backend
         if (selectedText) {
-            // Stop and remove any existing audio
-            if (audioElement) {
-                audioElement.pause();
-                audioElement.remove();
-            }
-
             sendToBackend(selectedText)
-                .then(() => {})
+                .then(audioBlob => {
+                    const type = audioBlob.type || 'audio/wav';
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    audioQueue.push({ src: audioUrl, type: type });
+
+                    // If no audio is currently playing, start the next one
+                    if (!currentAudio) {
+                        playNext();
+                    }
+                })
                 .catch(error => console.error('Error:', error));
         }
     }
@@ -56,35 +81,9 @@ function sendToBackend(text) {
             }
 
             const audioBlob = await response.blob();
-            const type = audioBlob.type || 'audio/wav'; // Set the MIME type based on the blob type
-
-            // Convert blob to data URL
-            const audioUrl = await convertBlobToDataURL(audioBlob);
-
-            // Create an audio element and play the audio
-            audioElement = new Audio();
-            audioElement.src = audioUrl;
-            audioElement.type = type; // Set the MIME type
-            audioElement.load();
-            audioElement.play();
-
-            document.body.appendChild(audioElement);
-
-            resolve();
+            resolve(audioBlob);
         } catch (error) {
             reject(error);
         }
     });
 }
-
-// Function to convert blob to data URL
-function convertBlobToDataURL(blob) {
-    return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            resolve(reader.result);
-        };
-        reader.readAsDataURL(blob);
-    });
-}
-
