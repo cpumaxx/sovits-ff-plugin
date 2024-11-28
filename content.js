@@ -35,28 +35,36 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
         console.log("Selected text:", selectedText);
 
-        // Split the text into sentences using a comprehensive regex
-        const sentences = splitIntoSentences(selectedText);
+        // If text is selected, send it to the backend
+        if (selectedText) {
+            sendToBackend(selectedText)
+                .then(audioBlob => {
+                    const type = audioBlob.type || 'audio/wav';
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    audioQueue.push({ src: audioUrl, type: type });
 
-        // Send each sentence to the backend and enqueue the audio
-        sentences.forEach(sentence => {
-            if (sentence) {
-                sendToBackend(sentence)
-                    .then(audioBlob => {
-                        const type = audioBlob.type || 'audio/wav';
-                        const audioUrl = URL.createObjectURL(audioBlob);
-                        audioQueue.push({ src: audioUrl, type: type });
-
-                        // If no audio is currently playing, start the next one
-                        if (!currentAudio) {
-                            playNext();
-                        }
-                    })
-                    .catch(error => console.error('Error:', error));
-            }
-        });
+                    // If no audio is currently playing, start the next one
+                    if (!currentAudio) {
+                        playNext();
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    } else if (request.action === "stopAudio") {
+        // Stop the current audio and clear the queue
+        stopAudio();
     }
 });
+
+// Function to stop the current audio and clear the queue
+function stopAudio() {
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.remove();
+        currentAudio = null;
+    }
+    audioQueue = [];
+}
 
 // Function to send the selected text to the backend
 function sendToBackend(text) {
@@ -96,10 +104,9 @@ function sendToBackend(text) {
 // Function to split text into sentences using a comprehensive regex
 function splitIntoSentences(text) {
     // Regex pattern to match sentence delimiters
-    const sentenceDelimiterPattern = /[。！？.\\?!¿¡⁇⁈⁉‽\\d+]+\\s*/g;
+    const sentenceDelimiterPattern = /[。！？.\\?!¿¡⁇⁈⁉‽']+\\\\s*/g;
 
     // Split the text into sentences
     const sentences = text.split(sentenceDelimiterPattern).filter(Boolean);
     return sentences.map(sentence => sentence.trim());
 }
-
