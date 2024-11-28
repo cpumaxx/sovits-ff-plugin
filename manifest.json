@@ -2,12 +2,12 @@
   "manifest_version": 2,
   "name": "Firefox SoVITS Screen Reader",
   "version": "1.0",
-  "description": "A minimalistic Firefox extension to read selected text using an API.",
+  "description": "A minimalistic Firefox extension to read selected text using the SoVITS v2 API.",
   "permissions": [
     "activeTab",
     "contextMenus",
-    "http://tts.yourdomain.com/api_v2/*", // Add the backend server URL
-    "https://tts.yourdomain.com/api_v2/*"  // Add the backend server URL for HTTPS
+    "storage",
+    "<all_urls>"
   ],
   "background": {
     "scripts": ["background.js"]
@@ -17,5 +17,6 @@
       "matches": ["<all_urls>"],
       "js": ["content.js"]
     }
-  ]
+  ],
+  "options_page": "options.html"
 }
