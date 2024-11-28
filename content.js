@@ -33,22 +33,27 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     console.log("Selected text:", selectedText);
 
-    // If text is selected, send it to the backend
-    if (selectedText) {
-      sendToBackend(selectedText)
-        .then(audioBlob => {
-          const type = audioBlob.type || 'audio/wav';
-          const audioUrl = URL.createObjectURL(audioBlob);
-          audioQueue.push({ src: audioUrl, type: type });
+    // Split the text into sentences based on language
+    const sentences = splitIntoSentences(selectedText);
 
-          // If no audio is currently playing, start the next one
-          if (!currentAudio) {
-            playNext();
-          }
-        })
-        .catch(error => console.error('Error:', error));
-    }
-  } else if (request.action === "stopAudio") {
+    // Send each sentence to the backend and enqueue the audio
+    sentences.forEach(sentence => {
+        if (sentence) {
+            sendToBackend(sentence)
+                .then(audioBlob => {
+                    const type = audioBlob.type || 'audio/wav';
+                    const audioUrl = URL.createObjectURL(audioBlob);
+                    audioQueue.push({ src: audioUrl, type: type });
+
+                    // If no audio is currently playing, start the next one
+                    if (!currentAudio) {
+                        playNext();
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            }
+         });
+     } else if (request.action === "stopAudio") {
     // Stop the current audio and clear the queue
     stopAudio();
   }
@@ -141,7 +146,7 @@ function sendToBackend(text) {
 // Function to split text into sentences using a comprehensive regex
 function splitIntoSentences(text) {
   // Regex pattern to match sentence delimiters
-  const sentenceDelimiterPattern = /[。！？.\\\\?!¿¡⁇⁈⁉‽']+\\\\\\\\s*/g;
+  const sentenceDelimiterPattern = /[。！？.?!¿¡⁇⁈⁉‽]/g;
 
   // Split the text into sentences
   const sentences = text.split(sentenceDelimiterPattern).filter(Boolean);
