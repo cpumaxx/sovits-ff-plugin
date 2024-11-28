@@ -87,7 +87,8 @@ function sendToBackend(text) {
       // Get the selected character and emotion
       chrome.storage.local.get('characters', function(items) {
         const characters = items && items.characters ? items.characters : [];
-        const selectedCharacter = selectedCharacterIndex >= 0 ? characters[selectedCharacterIndex] : null;
+        const chararrayIndex = characters.findIndex(char => char.name === selectedCharacterIndex);
+        const selectedCharacter = chararrayIndex >= 0 ? characters[chararrayIndex] : null;
 
         if (!selectedCharacter || !selectedCharacter.emotions) {
           console.error("Selected character is not defined or has no emotions.");
