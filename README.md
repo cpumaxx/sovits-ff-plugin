@@ -1,4 +1,5 @@
 # sovits-ff-plugin
+# Firefox Plugin for using GPT-SoVITS as a screen reader
 
 You can add this plugin with about:debugging#/runtime/this-firefox and pointing it at the manifest file.
 
