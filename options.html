@@ -3,7 +3,12 @@
 <head>
   <title>Settings</title>
   <style>
-    body { width: 400px; padding: 10px; }
+    body { width: 600px; padding: 10px; }
+    #characters { width: 300px; }
+    #characterDetails { display: none; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border: 1px solid #ddd; padding: 8px; }
+    th { background-color: #f2f2f2; }
   </style>
 </head>
 <body>
@@ -13,7 +18,37 @@
     <input type="text" id="backendUrl" style="width: 300px;" />
     <button id="save">Save</button>
   </div>
+  <h2>Characters</h2>
+  <div>
+    <label for="characterList">Characters:</label>
+    <select id="characterList" size="5"></select>
+    <button id="editCharacter">Edit</button>
+    <button id="removeCharacter">Remove</button>
+    <div id="addCharacter">
+      <button id="newCharacter">New Character</button>
+    </div>
+  </div>
+  <div id="characterDetails">
+    <label for="characterName">Name:</label>
+    <input type="text" id="characterName" style="width: 200px;" />
+    <table id="emotionsGrid">
+      <thead>
+        <tr>
+          <th>Emotion Name</th>
+          <th>Text Lang</th>
+          <th>Ref Audio Path</th>
+          <th>Prompt Lang</th>
+          <th>Prompt Text</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+    </table>
+    <button id="addEmotion">Add Emotion</button>
+    <button id="saveCharacter">Save Character</button>
+    <button id="cancelEdit">Cancel</button>
+  </div>
   <script src="options.js"></script>
 </body>
 </html>
-
