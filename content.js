@@ -35,7 +35,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
         console.log("Selected text:", selectedText);
 
-        // Split the text into sentences based on language
+        // Split the text into sentences using a comprehensive regex
         const sentences = splitIntoSentences(selectedText);
 
         // Send each sentence to the backend and enqueue the audio
@@ -74,10 +74,10 @@ function sendToBackend(text) {
             streaming_mode: false // Default to non-streaming mode
         }).toString();
 
-        console.log("Sending to backend:", `https://tts.lothlorien.ca/api_v2/tts?${queryParams}`);
+        console.log("Sending to backend:", `https://tts.yourdomain.com/api_v2/tts?${queryParams}`);
 
         try {
-            const response = await fetch(`https://tts.lothlorien.ca/api_v2/tts?${queryParams}`, {
+            const response = await fetch(`https://tts.yourdomain.com/api_v2/tts?${queryParams}`, {
                 method: 'GET'
             });
 
@@ -93,29 +93,13 @@ function sendToBackend(text) {
     });
 }
 
-// Function to split text into sentences based on language
+// Function to split text into sentences using a comprehensive regex
 function splitIntoSentences(text) {
-    // Placeholder for language detection
-    const language = detectLanguage(text);
-    let sentences = [];
+    // Regex pattern to match sentence delimiters
+    const sentenceDelimiterPattern = /[。！？.\\?!¿¡⁇⁈⁉‽\\d+]+\\s*/g;
 
-    switch (language) {
-        case 'en':
-            sentences = text.match(/[^\\.\\!\\?]+[\\.!\\?]+/g) || [];
-            break;
-        case 'ja':
-            sentences = text.match(/[^\\。\\!\\？]+[。\\!\\？]+/g) || [];
-            break;
-        // Add cases for other languages as needed
-        default:
-            sentences = [text];
-    }
-
+    // Split the text into sentences
+    const sentences = text.split(sentenceDelimiterPattern).filter(Boolean);
     return sentences.map(sentence => sentence.trim());
 }
 
-// Placeholder function for language detection
-function detectLanguage(text) {
-    // For now, assuming it's Japanese
-    return 'ja';
-}
