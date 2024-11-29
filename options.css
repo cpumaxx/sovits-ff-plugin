@@ -1,6 +1,6 @@
 body {
   font-family: Arial, sans-serif;
-  width: 600px;
+  width: 90%;
   padding: 10px;
   background-color: #f5f5f5;
   border: 1px solid #ccc;
@@ -28,6 +28,7 @@ input[type="text"] {
   padding: 5px;
   border: 1px solid #ccc;
   border-radius: 3px;
+  width: 90%;
 }
 
 table {
@@ -61,7 +62,14 @@ button:hover {
   margin-top: 20px;
 }
 
+#emotionsGridContainer {
+  margin-top: 20px;
+}
+
 #emotionsGrid tbody tr:nth-child(even) {
   background-color: #f9f9f9;
 }
 
+.hidden {
+  display: none;
+}
