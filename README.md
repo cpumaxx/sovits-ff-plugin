@@ -1,5 +1,8 @@
+<img src="https://github.com/cpumaxx/sovits-ff-plugin/blob/main/icon.svg?raw=true" width="128"> 
+
 # sovits-ff-plugin
 # Firefox Plugin for using GPT-SoVITS as a screen reader
+
 
 You can add this plugin from the interface you get putting about:debugging#/runtime/this-firefox in your address bar, using "Load Temporary Addon..." and pointing it at the manifest file.
 
