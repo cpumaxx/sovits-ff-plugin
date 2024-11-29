@@ -11,6 +11,19 @@ const injectedTabs = new Set();
        });
      }
    });
+console.log("Background script loaded.");
+
+const injectedTabs = new Set();
+
+   chrome.commands.onCommand.addListener(function(command) {
+     if (command === "read-selected-text") {
+       chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+         if (tabs[0]) {
+           chrome.tabs.sendMessage(tabs[0].id, { action: "readSelectedText" });
+         }
+       });
+     }
+   });
 
 function setSelectedCharacter(characterIndex, emotionName) {
   chrome.storage.local.set({ selectedCharacterIndex: characterIndex, selectedEmotion: emotionName }, function() {
@@ -96,7 +109,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     });
   } else if (info.menuItemId.startsWith("selectEmotion-")) {
     const parts = info.menuItemId.split("-");
-    if (parts.length >= 4 && parts[0] === "selectEmotion") {
+    if (parts.length >= 3 && parts[0] === "selectEmotion") {
       const characterIndex = parts[1];
       const emotionName = parts.slice(2).join(" ");
       setSelectedCharacter(characterIndex, emotionName);
