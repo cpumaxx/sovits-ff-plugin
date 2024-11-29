@@ -30,22 +30,21 @@ function saveBackendUrl() {
 }
 
 function loadCharacters() {
-  chrome.storage.local.get(['characters', 'selectedCharacterName', 'selectedEmotion'], function(items) {
-    let characters = items && items.characters ? items.characters : {};
-    populateCharacterList(Object.values(characters));
-    setLastUsedCharacter(items.selectedCharacterName, items.selectedEmotion);
+  chrome.storage.local.get(['characters'], function(items) {
+    let characters = items && items.characters ? items.characters : [];
+    populateCharacterList(characters);
   });
 }
 
 function populateCharacterList(characters) {
   const characterList = document.getElementById('characterList');
   characterList.innerHTML = '';
-  for (let char of characters) {
+  characters.forEach(char => {
     const option = document.createElement('option');
     option.text = char.name;
     option.value = char.name;
     characterList.add(option);
-  }
+  });
 }
 
 function newCharacter() {
@@ -57,14 +56,13 @@ function editCharacter() {
   const characterList = document.getElementById('characterList');
   const selectedIndex = characterList.selectedIndex;
   if (selectedIndex >= 0) {
-    const selectedCharacterName = characterList.options[selectedIndex].value;
+    const selectedCharacter = characterList.options[selectedIndex].value;
     chrome.storage.local.get('characters', function(items) {
-      const characters = items && items.characters ? items.characters : {};
-      const selectedCharacter = characters[selectedIndex];
-      if (selectedCharacter) {
-        document.getElementById('characterName').value = selectedCharacter.name;
-        populateEmotionsGrid(selectedCharacter.emotions);
-        document.getElementById('characterDetails').dataset.name = selectedCharacterName;
+      const characters = items && items.characters ? items.characters : [];
+      const selectedChar = characters.find(char => char.name === selectedCharacter);
+      if (selectedChar) {
+        document.getElementById('characterName').value = selectedChar.name;
+        populateEmotionsGrid(selectedChar.emotions);
         toggleCharacterEditor(false);
       }
     });
@@ -75,18 +73,14 @@ function removeCharacter() {
   const characterList = document.getElementById('characterList');
   const selectedIndex = characterList.selectedIndex;
   if (selectedIndex >= 0) {
-    const selectedCharacterName = characterList.options[selectedIndex].value;
+    const selectedCharacter = characterList.options[selectedIndex].value;
     chrome.storage.local.get('characters', function(items) {
-      let characters = items && items.characters ? items.characters : [];
-      // Find the index of the character with the given name
-      const index = characters.findIndex(char => char.name === selectedCharacterName);
-      if (index !== -1) {
-        characters.splice(index, 1);
-        chrome.storage.local.set({ characters: characters }, function() {
-          loadCharacters();
-          updateContextMenus();
-        });
-      }
+      const characters = items && items.characters ? items.characters : [];
+      const updatedCharacters = characters.filter(char => char.name !== selectedCharacter);
+      chrome.storage.local.set({ characters: updatedCharacters }, function() {
+        loadCharacters();
+        updateContextMenus();
+      });
     });
   }
 }
@@ -107,24 +101,12 @@ function saveCharacter() {
 
   chrome.storage.local.get('characters', function(items) {
     let characters = items && items.characters ? items.characters : [];
-
-    // Find the index of the character with the given name
-    const index = characters.findIndex(char => char.name === characterName);
-
-    if (index !== -1) {
-      // Update existing character
-      characters[index] = {
-        name: characterName,
-        emotions: emotions
-      };
+    const existingCharacterIndex = characters.findIndex(char => char.name === characterName);
+    if (existingCharacterIndex !== -1) {
+      characters[existingCharacterIndex] = { name: characterName, emotions: emotions };
     } else {
-      // Add new character
-      characters.push({
-        name: characterName,
-        emotions: emotions
-      });
+      characters.push({ name: characterName, emotions: emotions });
     }
-
     chrome.storage.local.set({ characters: characters }, function() {
       alert('Character saved.');
       toggleCharacterEditor(false);
@@ -139,15 +121,20 @@ function cancelEdit() {
   clearEmotionsGrid();
 }
 
-function toggleCharacterEditor(isNew, name) {
+function toggleCharacterEditor(isNew) {
   const characterDetails = document.getElementById('characterDetails');
+  const emotionsGridContainer = document.getElementById('emotionsGridContainer');
+  if (characterDetails.style.display === 'none') {
+    characterDetails.style.display = 'block';
+    emotionsGridContainer.style.display = 'block';
+  } else {
+    characterDetails.style.display = 'none';
+    emotionsGridContainer.style.display = 'none';
+  }
   if (isNew) {
     document.getElementById('characterName').value = '';
-    characterDetails.dataset.name = '';
-  } else {
-    characterDetails.dataset.name = name;
+    clearEmotionsGrid();
   }
-  characterDetails.style.display = characterDetails.style.display === 'none' ? 'block' : 'none';
 }
 
 function addEmotion() {
@@ -277,24 +264,9 @@ function clearEmotionsGrid() {
   emotionsGridBody.innerHTML = '';
 }
 
-function setLastUsedCharacter(characterName, selectedEmotion) {
-  const characterList = document.getElementById('characterList');
-  for (let i = 0; i < characterList.options.length; i++) {
-    if (characterList.options[i].value === characterName) {
-      characterList.selectedIndex = i;
-      break;
-    }
-  }
-
-  if (selectedEmotion) {
-    // Optionally, select the emotion in the grid
-  }
-}
-
-// Function to update context menus based on current characters
 function updateContextMenus() {
   chrome.storage.local.get('characters', function(items) {
-    const characters = items && items.characters ? Object.values(items.characters) : [];
+    const characters = items && items.characters ? items.characters : [];
     chrome.contextMenus.removeAll(function() {
       chrome.contextMenus.create({
         id: "readSelectedText",
@@ -308,7 +280,7 @@ function updateContextMenus() {
       });
 
       characters.forEach((character) => {
-        if (character.emotions) {
+        if (character.emotions && character.emotions.length > 0) {
           chrome.contextMenus.create({
             id: `selectCharacter-${character.name}`,
             title: `Select Character: ${character.name}`,
