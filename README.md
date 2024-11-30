@@ -1,6 +1,7 @@
-<img src="https://github.com/cpumaxx/sovits-ff-plugin/blob/main/icon.svg?raw=true" width="128"> 
+<img align="Left" src="https://github.com/cpumaxx/sovits-ff-plugin/blob/main/icon.svg?raw=true" width="128"> 
 
-# Firefox Plugin for using GPT-SoVITS as a screen reader
+<H1>Firefox Plugin for using GPT-SoVITS as a screen reader<BR><BR><BR></H1>
+
 ### Fully local and self contained: the ONLY network traffic is to the single API endpoint that you define
 
 You can add this plugin by one of:
