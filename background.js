@@ -11,19 +11,6 @@ const injectedTabs = new Set();
        });
      }
    });
-console.log("Background script loaded.");
-
-const injectedTabs = new Set();
-
-   chrome.commands.onCommand.addListener(function(command) {
-     if (command === "read-selected-text") {
-       chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-         if (tabs[0]) {
-           chrome.tabs.sendMessage(tabs[0].id, { action: "readSelectedText" });
-         }
-       });
-     }
-   });
 
 function setSelectedCharacter(characterIndex, emotionName) {
   chrome.storage.local.set({ selectedCharacterIndex: characterIndex, selectedEmotion: emotionName }, function() {
