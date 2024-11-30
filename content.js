@@ -33,7 +33,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     console.log("Selected text:", selectedText);
 
-    // Split the text into sentences based on language
+    // Split the text into sentences using a comprehensive regex
     const sentences = splitIntoSentences(selectedText);
 
     // Send each sentence to the backend and enqueue the audio
