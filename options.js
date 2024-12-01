@@ -7,9 +7,35 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('cancelEdit').addEventListener('click', cancelEdit);
   document.getElementById('addEmotion').addEventListener('click', addEmotion);
 
+  // Add event listener for change event on characterList dropdown
+  document.getElementById('characterList').addEventListener('change', updateCharacterDetails);
+
   loadBackendUrl();
   loadCharacters();
+  // Initial call to update character details
+  updateCharacterDetails();
 });
+
+// Function to update character details based on selected character
+function updateCharacterDetails() {
+  const characterList = document.getElementById('characterList');
+  const selectedIndex = characterList.selectedIndex;
+  if (selectedIndex >= 0) {
+    const selectedCharacter = characterList.options[selectedIndex].value;
+    chrome.storage.local.get('characters', function(items) {
+      const characters = items && items.characters ? items.characters : [];
+      const selectedChar = characters.find(char => char.name === selectedCharacter);
+      if (selectedChar) {
+        document.getElementById('characterName').value = selectedChar.name;
+        populateEmotionsGrid(selectedChar.emotions);
+      } else {
+        console.error('Selected character not found:', selectedCharacter);
+      }
+    });
+  } else {
+    console.log('No character selected');
+  }
+}
 
 function loadBackendUrl() {
   chrome.storage.local.get('backendUrl', function(items) {
@@ -53,20 +79,8 @@ function newCharacter() {
 }
 
 function editCharacter() {
-  const characterList = document.getElementById('characterList');
-  const selectedIndex = characterList.selectedIndex;
-  if (selectedIndex >= 0) {
-    const selectedCharacter = characterList.options[selectedIndex].value;
-    chrome.storage.local.get('characters', function(items) {
-      const characters = items && items.characters ? items.characters : [];
-      const selectedChar = characters.find(char => char.name === selectedCharacter);
-      if (selectedChar) {
-        document.getElementById('characterName').value = selectedChar.name;
-        populateEmotionsGrid(selectedChar.emotions);
-        toggleCharacterEditor(false);
-      }
-    });
-  }
+  updateCharacterDetails();
+  toggleCharacterEditor(false);
 }
 
 function removeCharacter() {
