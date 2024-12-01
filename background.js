@@ -12,6 +12,70 @@ const injectedTabs = new Set();
      }
    });
 
+function readSelectedText(tab) {
+  // Get the selected text
+  chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+    if (tabs[0]) {
+      chrome.tabs.sendMessage(tabs[0].id, { action: "getSelectedText" }, function(response) {
+        if (response && response.selectedText) {
+          const text = response.selectedText;
+          // Send the text to the backend with a sequence number
+          const sequence = requestSequence++;
+          sendTextToBackend(text, sequence);
+        }
+      });
+    }
+  });
+}
+
+let requestSequence = 0;
+const audioQueue = [];
+
+function sendTextToBackend(text, sequence) {
+  // Simulate sending text to backend and getting audio back (replace with actual API call)
+  getAudioFromBackend(text, function(audioData) {
+    // Handle the audio response with the associated sequence number
+    handleAudioResponse(audioData, sequence);
+  });
+}  
+function getAudioFromBackend(text, callback) {
+  // Replace this with actual API call to get audio from backend
+  setTimeout(function() {
+    const audioData = `audio_for_${text}`;
+    callback(audioData);
+  }, Math.random() * 3000); // Simulate variable response time
+}  
+function handleAudioResponse(audioData, sequence) {
+  audioQueue.push({ sequence: sequence, audio: audioData });
+  audioQueue.sort((a, b) => a.sequence - b.sequence);
+  playNextAudio();
+}  
+function playNextAudio() {
+  if (audioQueue.length > 0 && audioQueue[0].sequence === requestSequence - audioQueue.length) {
+    const audioItem = audioQueue.shift();
+    playAudio(audioItem.audio);
+  }
+}  
+function playAudio(audioData) {
+  console.log(`Playing audio: ${audioData}`);
+  // Replace with actual audio playback code
+  setTimeout(playNextAudio, 1000); // Simulate audio playback duration
+}  
+chrome.commands.onCommand.addListener(function(command) {
+  if (command === "read-selected-text") {
+    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+      if (tabs[0]) {
+        readSelectedText(tabs[0]);
+      }
+    });
+  }
+});  
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+  if (info.menuItemId === "readSelectedText") {
+    readSelectedText(tab);
+  }
+});
+
 function setSelectedCharacter(characterIndex, emotionName) {
   chrome.storage.local.set({ selectedCharacterIndex: characterIndex, selectedEmotion: emotionName }, function() {
     console.log(`Selected character index: ${characterIndex}, Emotion: ${emotionName}`);
@@ -103,3 +167,4 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     }
   }
 });
+

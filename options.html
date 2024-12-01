@@ -38,6 +38,8 @@
             <th>Ref Audio Path</th>
             <th>Prompt Lang</th>
             <th>Prompt Text</th>
+            <th>GPT Model</th>
+            <th>SoVITS Model</th>
             <th>Action</th>
           </tr>
         </thead>
@@ -46,6 +48,15 @@
       </table>
     </div>
   </div>
+     <h2>Export/Import</h2>
+     <div>
+       <button id="exportSettings">Export Settings</button>
+       <input type="file" id="importFile" style="display: none;">
+       <button id="importSettings">Import Settings</button>
+     </div>
+  <datalist id="audioFilesList"></datalist> <!-- Added datalist -->
+  <datalist id="gptModelsList"></datalist>
+  <datalist id="sovitsModelsList"></datalist>
   <script src="options.js"></script>
 </body>
 </html>
