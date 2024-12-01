@@ -1,3 +1,9 @@
+// Define language options
+const langOptions = [
+  "auto", "auto_yue", "en", "zh", "ja", "yue", "ko", "all_zh", "all_ja", "all_yue", "all_ko"
+];
+
+
 document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('save').addEventListener('click', saveBackendUrl);
   document.getElementById('newCharacter').addEventListener('click', newCharacter);
@@ -12,14 +18,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
   loadBackendUrl();
   loadCharacters();
-  // Initial call to update character details
   updateCharacterDetails();
 });
-
-// Define language options
-const langOptions = [
-  "auto", "auto_yue", "en", "zh", "ja", "yue", "ko", "all_zh", "all_ja", "all_yue", "all_ko"
-];
 
 // Function to update character details based on selected character
 function updateCharacterDetails() {
@@ -46,6 +46,7 @@ function loadBackendUrl() {
   chrome.storage.local.get('backendUrl', function(items) {
     if (items && items.backendUrl) {
       document.getElementById('backendUrl').value = items.backendUrl;
+      fetchAudioFiles(); // Fetch audio files on page load
     } else {
       document.getElementById('backendUrl').value = '';
     }
@@ -56,6 +57,7 @@ function saveBackendUrl() {
   let backendUrl = document.getElementById('backendUrl').value;
   chrome.storage.local.set({ backendUrl: backendUrl }, function() {
     console.log('Backend URL saved:', backendUrl);
+    fetchAudioFiles(); // Fetch audio files after saving backend URL
     alert('Backend URL saved.');
   });
 }
@@ -154,6 +156,7 @@ function toggleCharacterEditor(isNew) {
     document.getElementById('characterName').value = '';
     clearEmotionsGrid();
   }
+  fetchAudioFiles();
 }
 
 function addEmotion() {
@@ -185,6 +188,7 @@ function addEmotion() {
   const refAudioInput = document.createElement('input');
   refAudioInput.type = 'text';
   refAudioInput.classList.add('ref-audio-path');
+  refAudioInput.setAttribute('list', 'audioFilesList'); 
   refAudioCell.appendChild(refAudioInput);
 
   // Prompt Lang Cell
@@ -252,6 +256,8 @@ function populateEmotionsGrid(emotions) {
     refAudioInput.type = 'text';
     refAudioInput.classList.add('ref-audio-path');
     refAudioInput.value = emotion.ref_audio_path;
+    refAudioInput.setAttribute('list', 'audioFilesList');
+    console.log('Input list attribute:', refAudioInput.list);
     refAudioCell.appendChild(refAudioInput);
 
     // Prompt Lang Cell
@@ -357,5 +363,32 @@ function updateContextMenus() {
   });
 }
 
+function fetchAudioFiles() {
+  const backendUrl = document.getElementById('backendUrl').value;
+  if (!backendUrl) {
+    console.log('Backend URL is not set.');
+    return;
+  }
+  fetch(`${backendUrl}/list_audio_files`)
+    .then(response => response.json())
+    .then(data => {
+      console.log('Data received:', data); // Inspect this in the console
+      const audioFiles = data.audio_files;
+      if (Array.isArray(audioFiles)) {
+        const audioFilesList = document.getElementById('audioFilesList');
+        audioFilesList.innerHTML = '';
+        audioFiles.forEach(audioFile => {
+          const option = document.createElement('option');
+          option.value = audioFile;
+          audioFilesList.appendChild(option);
+        });
+      } else {
+        console.error('Invalid data format. Expected an array in "audio_files" property.');
+      }
+    })
+    .catch(error => console.error('Error fetching audio files:', error));
+}
+
 // Initial loading of context menus
 updateContextMenus();
+
