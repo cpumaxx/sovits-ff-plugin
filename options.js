@@ -3,7 +3,6 @@ const langOptions = [
   "auto", "auto_yue", "en", "zh", "ja", "yue", "ko", "all_zh", "all_ja", "all_yue", "all_ko"
 ];
 
-
 document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('save').addEventListener('click', saveBackendUrl);
   document.getElementById('newCharacter').addEventListener('click', newCharacter);
@@ -12,6 +11,10 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('saveCharacter').addEventListener('click', saveCharacter);
   document.getElementById('cancelEdit').addEventListener('click', cancelEdit);
   document.getElementById('addEmotion').addEventListener('click', addEmotion);
+  document.getElementById('exportSettings').addEventListener('click', exportSettings);
+  document.getElementById('importSettings').addEventListener('click', () => {
+    document.getElementById('importFile').click();
+  });
 
   // Add event listener for change event on characterList dropdown
   document.getElementById('characterList').addEventListener('change', updateCharacterDetails);
@@ -46,7 +49,7 @@ function loadBackendUrl() {
   chrome.storage.local.get('backendUrl', function(items) {
     if (items && items.backendUrl) {
       document.getElementById('backendUrl').value = items.backendUrl;
-      fetchAudioFiles(); // Fetch audio files on page load
+      fetchBackendFiles(); // Fetch backend files on page load
     } else {
       document.getElementById('backendUrl').value = '';
     }
@@ -57,7 +60,7 @@ function saveBackendUrl() {
   let backendUrl = document.getElementById('backendUrl').value;
   chrome.storage.local.set({ backendUrl: backendUrl }, function() {
     console.log('Backend URL saved:', backendUrl);
-    fetchAudioFiles(); // Fetch audio files after saving backend URL
+    fetchBackendFiles(); // Fetch lists after saving backend URL
     alert('Backend URL saved.');
   });
 }
@@ -156,7 +159,7 @@ function toggleCharacterEditor(isNew) {
     document.getElementById('characterName').value = '';
     clearEmotionsGrid();
   }
-  fetchAudioFiles();
+  fetchBackendFiles();
 }
 
 function addEmotion() {
@@ -211,8 +214,26 @@ function addEmotion() {
   promptTextInput.classList.add('prompt-text');
   promptTextCell.appendChild(promptTextInput);
 
+  // GPT Cell
+  const gptCell = newRow.insertCell(5);
+  const gptInput = document.createElement('input');
+  gptInput.type = 'text';
+  gptInput.classList.add('gpt-text');
+  gptInput.setAttribute('list', 'gptModelsList');
+  gptInput.list = 'gptModelsList';
+  gptCell.appendChild(gptInput);
+
+  // SoVITS Cell
+  const soVITSCell = newRow.insertCell(6);
+  const soVITSInput = document.createElement('input');
+  soVITSInput.type = 'text';
+  soVITSInput.classList.add('soVITS-text');
+  soVITSInput.setAttribute('list', 'sovitsModelsList');
+  soVITSInpute.list = 'sovitsModelsList';
+  soVITSCell.appendChild(soVITSInput);
+
   // Action Cell
-  const actionCell = newRow.insertCell(5);
+  const actionCell = newRow.insertCell(7);
   const removeButton = document.createElement('button');
   removeButton.textContent = 'Remove';
   removeButton.addEventListener('click', function() {
@@ -257,7 +278,6 @@ function populateEmotionsGrid(emotions) {
     refAudioInput.classList.add('ref-audio-path');
     refAudioInput.value = emotion.ref_audio_path;
     refAudioInput.setAttribute('list', 'audioFilesList');
-    console.log('Input list attribute:', refAudioInput.list);
     refAudioCell.appendChild(refAudioInput);
 
     // Prompt Lang Cell
@@ -283,8 +303,26 @@ function populateEmotionsGrid(emotions) {
     promptTextInput.value = emotion.prompt_text;
     promptTextCell.appendChild(promptTextInput);
 
+    // GPT Cell
+    const gptCell = newRow.insertCell(5);
+    const gptInput = document.createElement('input');
+    gptInput.type = 'text';
+    gptInput.classList.add('gpt-text');
+    gptInput.value = emotion.gpt || '';
+    gptInput.setAttribute('list', 'gptModelsList');
+    gptCell.appendChild(gptInput);
+
+    // SoVITS Cell
+    const soVITSCell = newRow.insertCell(6);
+    const soVITSInput = document.createElement('input');
+    soVITSInput.type = 'text';
+    soVITSInput.classList.add('soVITS-text');
+    soVITSInput.value = emotion.soVITS || '';
+    soVITSInput.setAttribute('list', 'sovitsModelsList');
+    soVITSCell.appendChild(soVITSInput);
+
     // Action Cell
-    const actionCell = newRow.insertCell(5);
+    const actionCell = newRow.insertCell(7);
     const removeButton = document.createElement('button');
     removeButton.textContent = 'Remove';
     removeButton.addEventListener('click', function() {
@@ -304,13 +342,17 @@ function getEmotionsFromGrid() {
     const refAudioInput = row.cells[2].querySelector('.ref-audio-path');
     const promptLangSelect = row.cells[3].querySelector('.prompt-lang');
     const promptTextInput = row.cells[4].querySelector('.prompt-text');
+    const gptInput = row.cells[5].querySelector('.gpt-text');
+    const soVITSInput = row.cells[6].querySelector('.soVITS-text');
 
     const emotion = {
       name: nameInput.value.trim(),
       text_lang: textLangSelect.value,
       ref_audio_path: refAudioInput.value.trim(),
       prompt_lang: promptLangSelect.value,
-      prompt_text: promptTextInput.value.trim()
+      prompt_text: promptTextInput.value.trim(),
+      gpt: gptInput.value.trim(),
+      soVITS: soVITSInput.value.trim()
     };
 
     if (emotion.name) {
@@ -363,7 +405,7 @@ function updateContextMenus() {
   });
 }
 
-function fetchAudioFiles() {
+function fetchBackendFiles() {
   const backendUrl = document.getElementById('backendUrl').value;
   if (!backendUrl) {
     console.log('Backend URL is not set.');
@@ -372,7 +414,6 @@ function fetchAudioFiles() {
   fetch(`${backendUrl}/list_audio_files`)
     .then(response => response.json())
     .then(data => {
-      console.log('Data received:', data); // Inspect this in the console
       const audioFiles = data.audio_files;
       if (Array.isArray(audioFiles)) {
         const audioFilesList = document.getElementById('audioFilesList');
@@ -387,7 +428,81 @@ function fetchAudioFiles() {
       }
     })
     .catch(error => console.error('Error fetching audio files:', error));
+
+  fetch(`${backendUrl}/list_gpt_files`)
+    .then(response => response.json())
+    .then(data => {
+      const gptModels = data.gpt_files;
+      if (Array.isArray(gptModels)) {
+        const gptModelsList = document.getElementById('gptModelsList');
+        gptModelsList.innerHTML = '';
+        gptModels.forEach(model => {
+          const option = document.createElement('option');
+          option.value = model;
+          gptModelsList.appendChild(option);
+        });
+      } else {
+        console.error('Invalid data format for GPT models.');
+      }
+    })
+    .catch(error => console.error('Error fetching GPT models:', error));
+
+  fetch(`${backendUrl}/list_sovits_files`)
+    .then(response => response.json())
+    .then(data => {
+      const sovitsModels = data.sovits_files;
+      if (Array.isArray(sovitsModels)) {
+        const sovitsModelsList = document.getElementById('sovitsModelsList');
+        sovitsModelsList.innerHTML = '';
+        sovitsModels.forEach(model => {
+          const option = document.createElement('option');
+          option.value = model;
+          sovitsModelsList.appendChild(option);
+        });
+      } else {
+        console.error('Invalid data format for SoVITS models.');
+      }
+    })
+    .catch(error => console.error('Error fetching SoVITS models:', error));
 }
+
+// Export settings
+function exportSettings() {
+  chrome.storage.local.get(['characters', 'backendUrl'], function (items) {
+    const data = {
+      characters: items && items.characters ? items.characters : {},
+      backendUrl: items && items.backendUrl ? items.backendUrl : ''
+    };
+    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
+    const downloadLink = document.createElement('a');
+    downloadLink.href = dataStr;
+    downloadLink.download = 'settings.json';
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    document.body.removeChild(downloadLink);
+  });
+}
+
+// Import settings
+document.getElementById('importFile').addEventListener('change', function (event) {
+  const file = event.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = function (e) {
+      const data = JSON.parse(e.target.result);
+      chrome.storage.local.set({
+        characters: data.characters || {},
+        backendUrl: data.backendUrl || ''
+      }, function () {
+        alert('Settings imported successfully.');
+        loadCharacters();
+        updateContextMenus();
+      });
+    };
+    reader.readAsText(file);
+  }
+});
+
 
 // Initial loading of context menus
 updateContextMenus();
