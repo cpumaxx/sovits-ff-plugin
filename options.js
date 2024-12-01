@@ -229,7 +229,7 @@ function addEmotion() {
   soVITSInput.type = 'text';
   soVITSInput.classList.add('soVITS-text');
   soVITSInput.setAttribute('list', 'sovitsModelsList');
-  soVITSInpute.list = 'sovitsModelsList';
+  soVITSInput.list = 'sovitsModelsList';
   soVITSCell.appendChild(soVITSInput);
 
   // Action Cell
