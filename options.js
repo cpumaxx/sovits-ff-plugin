@@ -16,6 +16,11 @@ document.addEventListener('DOMContentLoaded', function() {
   updateCharacterDetails();
 });
 
+// Define language options
+const langOptions = [
+  "auto", "auto_yue", "en", "zh", "ja", "yue", "ko", "all_zh", "all_ja", "all_yue", "all_ko"
+];
+
 // Function to update character details based on selected character
 function updateCharacterDetails() {
   const characterList = document.getElementById('characterList');
@@ -155,38 +160,54 @@ function addEmotion() {
   const emotionsGridBody = document.querySelector('#emotionsGrid tbody');
   const newRow = emotionsGridBody.insertRow();
 
+  // Emotion Name Cell
   const nameCell = newRow.insertCell(0);
   const nameInput = document.createElement('input');
   nameInput.type = 'text';
   nameInput.classList.add('emotion-name');
   nameCell.appendChild(nameInput);
 
+  // Text Lang Cell
   const textLangCell = newRow.insertCell(1);
-  const textLangInput = document.createElement('input');
-  textLangInput.type = 'text';
-  textLangInput.classList.add('text-lang');
-  textLangInput.value = 'en'; // Default text language
-  textLangCell.appendChild(textLangInput);
+  const textLangSelect = document.createElement('select');
+  textLangSelect.classList.add('text-lang');
+  langOptions.forEach(optionValue => {
+    const option = document.createElement('option');
+    option.value = optionValue;
+    option.textContent = optionValue;
+    textLangSelect.appendChild(option);
+  });
+  textLangSelect.value = 'en'; // Default text language
+  textLangCell.appendChild(textLangSelect);
 
+  // Ref Audio Path Cell
   const refAudioCell = newRow.insertCell(2);
   const refAudioInput = document.createElement('input');
   refAudioInput.type = 'text';
   refAudioInput.classList.add('ref-audio-path');
   refAudioCell.appendChild(refAudioInput);
 
+  // Prompt Lang Cell
   const promptLangCell = newRow.insertCell(3);
-  const promptLangInput = document.createElement('input');
-  promptLangInput.type = 'text';
-  promptLangInput.classList.add('prompt-lang');
-  promptLangInput.value = 'en'; // Default prompt language
-  promptLangCell.appendChild(promptLangInput);
+  const promptLangSelect = document.createElement('select');
+  promptLangSelect.classList.add('prompt-lang');
+  langOptions.forEach(optionValue => {
+    const option = document.createElement('option');
+    option.value = optionValue;
+    option.textContent = optionValue;
+    promptLangSelect.appendChild(option);
+  });
+  promptLangSelect.value = 'en'; // Default prompt language
+  promptLangCell.appendChild(promptLangSelect);
 
+  // Prompt Text Cell
   const promptTextCell = newRow.insertCell(4);
   const promptTextInput = document.createElement('input');
   promptTextInput.type = 'text';
   promptTextInput.classList.add('prompt-text');
   promptTextCell.appendChild(promptTextInput);
 
+  // Action Cell
   const actionCell = newRow.insertCell(5);
   const removeButton = document.createElement('button');
   removeButton.textContent = 'Remove';
@@ -202,6 +223,7 @@ function populateEmotionsGrid(emotions) {
   emotions.forEach(emotion => {
     const newRow = emotionsGridBody.insertRow();
 
+    // Emotion Name Cell
     const nameCell = newRow.insertCell(0);
     const nameInput = document.createElement('input');
     nameInput.type = 'text';
@@ -209,13 +231,22 @@ function populateEmotionsGrid(emotions) {
     nameInput.value = emotion.name;
     nameCell.appendChild(nameInput);
 
+    // Text Lang Cell
     const textLangCell = newRow.insertCell(1);
-    const textLangInput = document.createElement('input');
-    textLangInput.type = 'text';
-    textLangInput.classList.add('text-lang');
-    textLangInput.value = emotion.text_lang;
-    textLangCell.appendChild(textLangInput);
+    const textLangSelect = document.createElement('select');
+    textLangSelect.classList.add('text-lang');
+    langOptions.forEach(optionValue => {
+      const option = document.createElement('option');
+      option.value = optionValue;
+      option.textContent = optionValue;
+      if (optionValue === emotion.text_lang) {
+        option.selected = true;
+      }
+      textLangSelect.appendChild(option);
+    });
+    textLangCell.appendChild(textLangSelect);
 
+    // Ref Audio Path Cell
     const refAudioCell = newRow.insertCell(2);
     const refAudioInput = document.createElement('input');
     refAudioInput.type = 'text';
@@ -223,13 +254,22 @@ function populateEmotionsGrid(emotions) {
     refAudioInput.value = emotion.ref_audio_path;
     refAudioCell.appendChild(refAudioInput);
 
+    // Prompt Lang Cell
     const promptLangCell = newRow.insertCell(3);
-    const promptLangInput = document.createElement('input');
-    promptLangInput.type = 'text';
-    promptLangInput.classList.add('prompt-lang');
-    promptLangInput.value = emotion.prompt_lang;
-    promptLangCell.appendChild(promptLangInput);
+    const promptLangSelect = document.createElement('select');
+    promptLangSelect.classList.add('prompt-lang');
+    langOptions.forEach(optionValue => {
+      const option = document.createElement('option');
+      option.value = optionValue;
+      option.textContent = optionValue;
+      if (optionValue === emotion.prompt_lang) {
+        option.selected = true;
+      }
+      promptLangSelect.appendChild(option);
+    });
+    promptLangCell.appendChild(promptLangSelect);
 
+    // Prompt Text Cell
     const promptTextCell = newRow.insertCell(4);
     const promptTextInput = document.createElement('input');
     promptTextInput.type = 'text';
@@ -237,6 +277,7 @@ function populateEmotionsGrid(emotions) {
     promptTextInput.value = emotion.prompt_text;
     promptTextCell.appendChild(promptTextInput);
 
+    // Action Cell
     const actionCell = newRow.insertCell(5);
     const removeButton = document.createElement('button');
     removeButton.textContent = 'Remove';
@@ -253,16 +294,16 @@ function getEmotionsFromGrid() {
   for (let i = 0; i < emotionsGridBody.rows.length; i++) {
     const row = emotionsGridBody.rows[i];
     const nameInput = row.cells[0].querySelector('.emotion-name');
-    const textLangInput = row.cells[1].querySelector('.text-lang');
+    const textLangSelect = row.cells[1].querySelector('.text-lang');
     const refAudioInput = row.cells[2].querySelector('.ref-audio-path');
-    const promptLangInput = row.cells[3].querySelector('.prompt-lang');
+    const promptLangSelect = row.cells[3].querySelector('.prompt-lang');
     const promptTextInput = row.cells[4].querySelector('.prompt-text');
 
     const emotion = {
       name: nameInput.value.trim(),
-      text_lang: textLangInput.value.trim(),
+      text_lang: textLangSelect.value,
       ref_audio_path: refAudioInput.value.trim(),
-      prompt_lang: promptLangInput.value.trim(),
+      prompt_lang: promptLangSelect.value,
       prompt_text: promptTextInput.value.trim()
     };
 
