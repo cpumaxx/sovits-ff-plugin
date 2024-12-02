@@ -5,7 +5,7 @@ const injectedTabs = new Set();
 chrome.commands.onCommand.addListener(function(command) {
   if (command === "read-selected-text") {
     chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-       if (tabs[0]) {
+      if (tabs[0]) {
         chrome.tabs.sendMessage(tabs[0].id, { action: "readSelectedText" });
       }
     });
@@ -13,15 +13,12 @@ chrome.commands.onCommand.addListener(function(command) {
 });
 
 function readSelectedText(tab) {
-  // Get the selected text
   chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
     if (tabs[0]) {
       chrome.tabs.sendMessage(tabs[0].id, { action: "getSelectedText" }, function(response) {
         if (response && response.selectedText) {
           const text = response.selectedText;
-          // Send the text to the backend with a sequence number
-          const sequence = requestSequence++;
-          sendTextToBackend(text, sequence);
+          sendTextToBackend(text, requestSequence++);
         }
       });
     }
@@ -32,35 +29,36 @@ let requestSequence = 0;
 const audioQueue = [];
 
 function sendTextToBackend(text, sequence) {
-  // Simulate sending text to backend and getting audio back (replace with actual API call)
   getAudioFromBackend(text, function(audioData) {
-    // Handle the audio response with the associated sequence number
     handleAudioResponse(audioData, sequence);
   });
-}  
+}
+
 function getAudioFromBackend(text, callback) {
-  // Replace this with actual API call to get audio from backend
   setTimeout(function() {
     const audioData = `audio_for_${text}`;
     callback(audioData);
-  }, Math.random() * 3000); // Simulate variable response time
-}  
+  }, Math.random() * 3000);
+}
+
 function handleAudioResponse(audioData, sequence) {
   audioQueue.push({ sequence: sequence, audio: audioData });
   audioQueue.sort((a, b) => a.sequence - b.sequence);
   playNextAudio();
-}  
+}
+
 function playNextAudio() {
   if (audioQueue.length > 0 && audioQueue[0].sequence === requestSequence - audioQueue.length) {
     const audioItem = audioQueue.shift();
     playAudio(audioItem.audio);
   }
-}  
+}
+
 function playAudio(audioData) {
   console.log(`Playing audio: ${audioData}`);
-  // Replace with actual audio playback code
-  setTimeout(playNextAudio, 1000); // Simulate audio playback duration
-}  
+  setTimeout(playNextAudio, 1000);
+}
+
 chrome.commands.onCommand.addListener(function(command) {
   if (command === "read-selected-text") {
     chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
@@ -69,7 +67,7 @@ chrome.commands.onCommand.addListener(function(command) {
       }
     });
   }
-});  
+});
 
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId === "readSelectedText") {
@@ -84,7 +82,6 @@ function setSelectedCharacter(characterIndex, emotionName) {
   });
 }
 
-// Function to update context menus
 function updateContextMenus() {
   chrome.storage.local.get('characters', function(items) {
     const characters = items && items.characters ? items.characters : [];
@@ -99,7 +96,6 @@ function updateContextMenus() {
         title: "Stop Audio",
         contexts: ["selection"]
       });
-
       characters.forEach((character, index) => {
         chrome.contextMenus.create({
           id: `selectCharacter-${character.name}`,
@@ -121,7 +117,6 @@ function updateContextMenus() {
   });
 }
 
-// Listen for storage changes to update context menus
 chrome.storage.onChanged.addListener(function(changes, areaName) {
   if (areaName === 'local' && changes.characters) {
     updateContextMenus();
@@ -131,11 +126,9 @@ chrome.storage.onChanged.addListener(function(changes, areaName) {
 // Initial loading of context menus
 updateContextMenus();
 
-// Handle the context menu item clicks
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   console.log("Context menu item clicked:", info);
   if (info.menuItemId === "readSelectedText") {
-    // Inject content script if not already injected
     if (!injectedTabs.has(tab.id)) {
       chrome.tabs.executeScript(tab.id, {
         file: "content.js"
@@ -147,14 +140,12 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
         }
       });
     }
-    // Send a message to the content script to read the selected text
     chrome.tabs.sendMessage(tab.id, { action: "readSelectedText" }, () => {
       if (chrome.runtime.lastError) {
         console.error(chrome.runtime.lastError);
       }
     });
   } else if (info.menuItemId === "stopAudio") {
-    // Send a message to the content script to stop audio
     chrome.tabs.sendMessage(tab.id, { action: "stopAudio" }, () => {
       if (chrome.runtime.lastError) {
         console.error(chrome.runtime.lastError);
@@ -170,11 +161,34 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
   }
 });
 
-// Function to update the context menu item title
-
-function updateContextMenuTitle(chararrayIndex, emotion) {
-   // Get the selected character and emotion
-   const title = `Read Selected Text - ${chararrayIndex}/${emotion}`;
-   chrome.contextMenus.update("readSelectedText", { title: title });
+function updateContextMenuTitle(characterIndex, emotionName) {
+  const title = `Read Selected Text - ${characterIndex}/${emotionName}`;
+  chrome.contextMenus.update("readSelectedText", { title: title });
 }
+
+// Function to set default selections on startup
+function setDefaultSelections() {
+  chrome.storage.local.get(['characters', 'selectedCharacterIndex', 'selectedEmotion'], function(items) {
+    const characters = items.characters || [];
+    const selectedCharacterIndex = items.selectedCharacterIndex;
+    const selectedEmotion = items.selectedEmotion;
+
+    if (characters.length === 0) {
+      console.log("No characters defined.");
+      return;
+    }
+
+    if (!selectedCharacterIndex || !selectedEmotion) {
+      const firstChar = characters[0];
+      const firstEmotion = firstChar.emotions ? firstChar.emotions[0].name : 'default';
+      setSelectedCharacter(firstChar.name, firstEmotion);
+      updateContextMenuTitle(firstChar.name, firstEmotion);
+      return;
+    }
+    updateContextMenuTitle(selectedCharacterIndex, selectedEmotion);
+  });
+}
+
+// Call setDefaultSelections when background script loads
+setDefaultSelections();
 
