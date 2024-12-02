@@ -2,15 +2,15 @@ console.log("Background script loaded.");
 
 const injectedTabs = new Set();
 
-   chrome.commands.onCommand.addListener(function(command) {
-     if (command === "read-selected-text") {
-       chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
-         if (tabs[0]) {
-           chrome.tabs.sendMessage(tabs[0].id, { action: "readSelectedText" });
-         }
-       });
-     }
-   });
+chrome.commands.onCommand.addListener(function(command) {
+  if (command === "read-selected-text") {
+    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+       if (tabs[0]) {
+        chrome.tabs.sendMessage(tabs[0].id, { action: "readSelectedText" });
+      }
+    });
+  }
+});
 
 function readSelectedText(tab) {
   // Get the selected text
@@ -70,6 +70,7 @@ chrome.commands.onCommand.addListener(function(command) {
     });
   }
 });  
+
 chrome.contextMenus.onClicked.addListener((info, tab) => {
   if (info.menuItemId === "readSelectedText") {
     readSelectedText(tab);
@@ -79,6 +80,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 function setSelectedCharacter(characterIndex, emotionName) {
   chrome.storage.local.set({ selectedCharacterIndex: characterIndex, selectedEmotion: emotionName }, function() {
     console.log(`Selected character index: ${characterIndex}, Emotion: ${emotionName}`);
+    updateContextMenuTitle(characterIndex, emotionName);
   });
 }
 
@@ -167,4 +169,12 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     }
   }
 });
+
+// Function to update the context menu item title
+
+function updateContextMenuTitle(chararrayIndex, emotion) {
+   // Get the selected character and emotion
+   const title = `Read Selected Text - ${chararrayIndex}/${emotion}`;
+   chrome.contextMenus.update("readSelectedText", { title: title });
+}
 
