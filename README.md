@@ -29,3 +29,11 @@ https://github.com/RVC-Boss/GPT-SoVITS/
 https://rentry.org/GPT-SoVITS-guide
 
 https://huggingface.co/cpumaxx/SoVITS-anime-mini-tts
+
+## Manual deployment for the privacy and security sensitive
+
+   - Clone the project with `git clone https://github.com/cpumaxx/sovits-ff-plugin`
+   - Change the manifest.js from `<all_urls>` to your API endpoint and change the ID (you can't re-use them since they will be rejected my Mozilla signing)
+   - zip up the manifest, all the js/html/css/svg files and change the extension from `zip` to `xpi`
+   - Sign the xpi file at https://addons.mozilla.org (you will need to create an account). Use the self-host option.
+   - Go to "Extensions" in your Firefox, click on the gear, icon and "Install add-on from file"
