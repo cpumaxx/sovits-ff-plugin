@@ -12,6 +12,8 @@ You can add this plugin by one of:
 
 Change the plugin preferences to something like https://tts.yourdomain.com/api_v2 or whatever your actual domain is and make sure you have your sovits `api_v2.py` api running on that url.
 
+If you want some of the API introspection quality-of-life improvements (listbox of available voice samples, etc) use my patched api_v2.py at https://github.com/cpumaxx/GPT-SoVITS/blob/main/api_v2.py
+
 You may need to use the -c parameter to point to a custon YAML file that defines things like your preferred ckpt and pth files.
 
 You need at least one character+emotion defined to use this plugin.
