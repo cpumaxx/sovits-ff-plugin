@@ -147,7 +147,7 @@ function sendToBackend(text) {
 // Function to split text into sentences using a comprehensive regex
 function splitIntoSentences(text) {
   // Regex pattern to match sentence delimiters
-  const sentenceDelimiterPattern = /[。！？.?!¿¡⁇⁈⁉‽「」『』【】（）〈〉《》〔〕｛｝♡♥❤♪♫♬★☆\n]/g;
+  const sentenceDelimiterPattern = /[。！？.?!¿¡⁇⁈⁉‽「」『』【】（）〈〉《》〔〕｛｝・♡♥❤♪♫♬★☆\n]/g;
 
   // Split the text into sentences
   const sentences = text.split(sentenceDelimiterPattern).filter(Boolean);
