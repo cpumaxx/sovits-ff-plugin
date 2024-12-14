@@ -30,6 +30,19 @@ https://rentry.org/GPT-SoVITS-guide
 
 https://huggingface.co/cpumaxx/SoVITS-anime-mini-tts
 
+## Running in a Google Colab environment
+You can run the API server in Google colab free tier and tunnel it out to the plugin via ngrok. Its a bit slow, but it works.
+
+https://colab.research.google.com/github/tyc0on/GPT-SoVITS-colab/blob/main/GPT-SoVITS-colab.ipynb
+
+First, run it once so that it can auto-download the pretrained models and you can verify that it's working.
+
+Finally you can change the `!python webui.py` line to `!python gpt_sovits_api_colab_ngrok.py` after uploading https://pastebin.com/YfjwVTF7 into the /content folder.
+
+Make sure to change the ngrok token placeholder in the script to your own.
+
+You'll need to upload your .wav files, any other models and api server config yaml files and adjust the run parameters accordingly.
+
 ## Manual deployment for the privacy and security sensitive
 
    - Clone the project with `git clone https://github.com/cpumaxx/sovits-ff-plugin`
