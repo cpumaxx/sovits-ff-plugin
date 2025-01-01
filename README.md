@@ -6,6 +6,7 @@
 
 You can add this plugin by one of:
 
+- installing the official Mozilla addons repo release at https://addons.mozilla.org/en-US/firefox/addon/sovits-screen-reader/
 - using the signed xpi file provided
 - zipping all the files and renaming the archive from .zip to .xpi (you could set up an account at https://addons.mozilla.org and sign your own if you want to eliminate errors) 
 - putting about:debugging#/runtime/this-firefox in your address bar, using "Load Temporary Addon..." and pointing it at the manifest file
