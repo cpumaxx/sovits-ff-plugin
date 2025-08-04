@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
   "name": "SoVITS Screen Reader",
-  "version": "1.0.3",
-  "description": "An extension to read selected text using the SoVITS v2 API, including rudimentary character and emotion management.",
+  "version": "1.1.0",
+  "description": "An extension to read selected text using the SoVITS v2 API, including character and emotion management.",
   "permissions": [
     "activeTab",
     "contextMenus",
