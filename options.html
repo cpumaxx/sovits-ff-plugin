@@ -1,62 +1,150 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Settings</title>
+  <title>SoVITS Screen Reader - Settings</title>
   <link rel="stylesheet" type="text/css" href="options.css">
 </head>
 <body>
-  <h1>Settings</h1>
-  <div>
-    <label for="backendUrl">Backend Server URL:</label>
-    <input type="text" id="backendUrl" style="width: 300px;" />
-    <button id="save">Save</button>
-  </div>
-  <h2>Characters</h2>
-  <div>
-    <label for="characterList">Characters:</label>
-    <select id="characterList" size="5"></select>
-    <button id="editCharacter">Edit</button>
-    <button id="removeCharacter">Remove</button>
-    <div id="addCharacter">
-      <button id="newCharacter">New Character</button>
-    </div>
-  </div>
-  <div id="characterDetails" style="display: none;">
-    <label for="characterName">Name:</label>
-    <input type="text" id="characterName" style="width: 200px;" />
-    <button id="addEmotion">Add Emotion</button>
-    <button id="saveCharacter">Save Character</button>
-    <button id="cancelEdit">Cancel</button>
+  <div class="container">
+    <header class="header">
+      <h1>SoVITS Screen Reader Settings</h1>
+      <p class="subtitle">Configure your TTS experience with custom characters and emotions</p>
+    </header>
 
-    <h3>Emotions</h3>
-    <div id="emotionsGridContainer">
-      <table id="emotionsGrid">
-        <thead>
-          <tr>
-            <th>Emotion Name</th>
-            <th>Text Lang</th>
-            <th>Ref Audio Path</th>
-            <th>Prompt Lang</th>
-            <th>Prompt Text</th>
-            <th>GPT Model</th>
-            <th>SoVITS Model</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-        </tbody>
-      </table>
+    <!-- Backend Server Configuration -->
+    <div class="card">
+      <h2>Backend Configuration</h2>
+      <div class="form-group">
+        <label for="backendUrl">Backend Server URL:
+          <span class="tooltip" data-tooltip="The URL of your SoVITS backend server (e.g., http://localhost:5000)">ⓘ</span>
+        </label>
+        <div class="input-group">
+          <input type="text" id="backendUrl" placeholder="e.g., http://localhost:5000" />
+          <div class="loading-spinner hidden" id="backendUrlSpinner"></div>
+        </div>
+      </div>
+      <div class="button-group">
+        <button id="save" class="btn btn-primary">
+          <span class="btn-text">Save Settings</span>
+          <span class="loading-spinner hidden"></span>
+        </button>
+        <button id="testConnection" class="btn btn-secondary">
+          <span class="btn-text">Test Connection</span>
+          <span class="loading-spinner hidden"></span>
+        </button>
+      </div>
+      <div id="statusMessage" class="status-message"></div>
+    </div>
+
+    <!-- Character Management Section -->
+    <div class="card">
+      <h2>Character Management</h2>
+      <div class="select-container">
+        <div class="character-selector">
+          <label for="characterList">Characters:
+            <span class="tooltip" data-tooltip="Select a character to edit or create a new one">ⓘ</span>
+          </label>
+          <div class="input-group">
+            <select id="characterList" size="5"></select>
+            <div class="loading-spinner hidden" id="characterListSpinner"></div>
+          </div>
+        </div>
+        <div class="character-actions">
+          <button id="newCharacter" class="btn btn-success">
+            <span class="btn-text">New Character</span>
+            <span class="loading-spinner hidden"></span>
+          </button>
+          <button id="editCharacter" class="btn btn-outline">
+            <span class="btn-text">Edit</span>
+            <span class="loading-spinner hidden"></span>
+          </button>
+          <button id="removeCharacter" class="btn btn-danger">
+            <span class="btn-text">Remove</span>
+            <span class="loading-spinner hidden"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Character Details Editor (Hidden by default) -->
+      <div id="characterDetails" class="hidden">
+        <h3>Character Details</h3>
+        <div class="character-form">
+          <div class="form-group">
+            <label for="characterName">Character Name:
+              <span class="tooltip" data-tooltip="Unique name for this character">ⓘ</span>
+            </label>
+            <input type="text" id="characterName" placeholder="Enter character name" />
+          </div>
+          <div class="button-group">
+            <button id="addEmotion" class="btn btn-secondary">
+              <span class="btn-text">Add Emotion</span>
+              <span class="loading-spinner hidden"></span>
+            </button>
+            <button id="saveCharacter" class="btn btn-primary">
+              <span class="btn-text">Save Character</span>
+              <span class="loading-spinner hidden"></span>
+            </button>
+            <button id="cancelEdit" class="btn btn-outline">
+              <span class="btn-text">Cancel</span>
+              <span class="loading-spinner hidden"></span>
+            </button>
+          </div>
+        </div>
+
+        <div class="emotions-section">
+          <div class="emotions-header">
+            <h3>Emotions
+              <span class="tooltip" data-tooltip="Add emotions with specific TTS parameters">ⓘ</span>
+            </h3>
+          </div>
+          <div id="emotionsGridContainer">
+            <table id="emotionsGrid">
+              <thead>
+                <tr>
+                  <th>Emotion Name</th>
+                  <th>Text Lang</th>
+                  <th>Ref Audio Path</th>
+                  <th>Prompt Lang</th>
+                  <th>Prompt Text</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Emotion rows will be added here dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Export/Import Section -->
+    <div class="card import-export-section">
+      <h2>Configuration Management</h2>
+      <div class="button-group">
+        <button id="exportSettings" class="btn btn-primary">
+          <span class="btn-text">Export Settings</span>
+          <span class="loading-spinner hidden"></span>
+        </button>
+        <input type="file" id="importFile" accept=".json" class="hidden">
+        <button id="importSettings" class="btn btn-secondary">
+          <span class="btn-text">Import Settings</span>
+          <span class="loading-spinner hidden"></span>
+        </button>
+      </div>
+      <div id="importStatus" class="status-message"></div>
+    </div>
+
+    <!-- Progress Indicator -->
+    <div id="globalProgress" class="progress-bar hidden">
+      <div class="progress-fill"></div>
+      <div class="progress-text">Processing...</div>
     </div>
   </div>
-     <h2>Export/Import</h2>
-     <div>
-       <button id="exportSettings">Export Settings</button>
-       <input type="file" id="importFile" style="display: none;">
-       <button id="importSettings">Import Settings</button>
-     </div>
-  <datalist id="audioFilesList"></datalist> <!-- Added datalist -->
-  <datalist id="gptModelsList"></datalist>
-  <datalist id="sovitsModelsList"></datalist>
+
+  <!-- Datalists for autocomplete (populated by JavaScript) -->
+  <datalist id="audioFilesList"></datalist>
+
   <script src="options.js"></script>
 </body>
 </html>
