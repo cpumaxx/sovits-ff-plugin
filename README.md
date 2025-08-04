@@ -6,11 +6,14 @@
 
 You can add this plugin by one of:
 
+- installing the official Mozilla addons repo release at https://addons.mozilla.org/en-US/firefox/addon/sovits-screen-reader/
 - using the signed xpi file provided
 - zipping all the files and renaming the archive from .zip to .xpi (you could set up an account at https://addons.mozilla.org and sign your own if you want to eliminate errors) 
 - putting about:debugging#/runtime/this-firefox in your address bar, using "Load Temporary Addon..." and pointing it at the manifest file
 
 Change the plugin preferences to something like https://tts.yourdomain.com/api_v2 or whatever your actual domain is and make sure you have your sovits `api_v2.py` api running on that url.
+
+If you want some of the API introspection quality-of-life improvements (listbox of available voice samples, etc) use my patched api_v2.py at https://github.com/cpumaxx/GPT-SoVITS/blob/main/api_v2.py
 
 You may need to use the -c parameter to point to a custon YAML file that defines things like your preferred ckpt and pth files.
 
@@ -27,3 +30,24 @@ https://github.com/RVC-Boss/GPT-SoVITS/
 https://rentry.org/GPT-SoVITS-guide
 
 https://huggingface.co/cpumaxx/SoVITS-anime-mini-tts
+
+## Running in a Google Colab environment
+You can run the API server in Google colab free tier and tunnel it out to the plugin via ngrok. Its a bit slow, but it works.
+
+https://colab.research.google.com/github/tyc0on/GPT-SoVITS-colab/blob/main/GPT-SoVITS-colab.ipynb
+
+First, run it once so that it can auto-download the pretrained models and you can verify that it's working.
+
+Finally you can change the `!python webui.py` line to `!python gpt_sovits_api_colab_ngrok.py` after uploading https://pastebin.com/YfjwVTF7 into the /content folder.
+
+Make sure to change the ngrok token placeholder in the script to your own.
+
+You'll need to upload your .wav files, any other models and api server config yaml files and adjust the run parameters accordingly.
+
+## Manual deployment for the privacy and security sensitive
+
+   - Clone the project with `git clone https://github.com/cpumaxx/sovits-ff-plugin`
+   - Change the manifest.js from `<all_urls>` to your API endpoint and change the ID (you can't re-use them since they will be rejected my Mozilla signing)
+   - zip up the manifest, all the js/html/css/svg files and change the extension from `zip` to `xpi`
+   - Sign the xpi file at https://addons.mozilla.org (you will need to create an account). Use the self-host option.
+   - Go to "Extensions" in your Firefox, click on the gear, icon and "Install add-on from file"
